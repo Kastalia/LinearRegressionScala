@@ -14,6 +14,11 @@ class LinearRegression() {
     diff.sum / y.length.toDouble
   }
 
+  def mae(y: DenseVector[Double], y_preds: DenseVector[Double]): Double = {
+    val diff = y.toArray zip y_preds.toArray map ( z => scala.math.abs(z._1 - z._2))
+    diff.sum / y.length.toDouble
+  }
+
   def fit(X: DenseMatrix[Double], y: DenseVector[Double], lr: Double, iterations: Int): Unit = {
     weight = DenseVector.ones[Double](X.cols)
     var y_preds = DenseVector.zeros[Double](y.length)
@@ -30,38 +35,48 @@ class LinearRegression() {
       loss = mse(y, y_preds)
 
       if ((i&0xff) == 0xff) {
-        println(s"iter: $i, loss: $loss, weight: $weight")
+        val loss_mae = mae(y, y_preds)
+        println(s"iter: $i, mse: $loss, mae: $loss_mae, weight: $weight")
       }
     }
   }
   def get_weight(): DenseVector[Double] ={
     weight
   }
+
+  def set_weight(w: DenseVector[Double]): Unit ={
+    weight = w
+  }
+
 }
 
 object mainspace {
   def main(args: Array[String]) {
+    /*
     // test with real data
     val (x, y, test) = read_data()
     val model = new LinearRegression()
     val lr = 0.001
-    val iterations = 9000
+    val iterations = 30000
     model.fit(x(0 to 1599, 0 to 24), y(0 to 1599), lr, iterations)
 
     val test_preds = model.predict(x(1600 to 1999, 0 to 24))
     val weight = model.get_weight()
-    val mse = model.mse(test_preds, y(1600 to 1999))
 
     println(s"\nprediction weight:")
     for (w <- weight){
       print(s"$w ")
     }
-    println(s"\nMSE: $mse")
     println("\n\nPredictions:")
-    for (i <- 0 to test_preds.length - 1){
-      println(y(i+1600), Math.round(test_preds(i)), test_preds(i))
-
-      /*
+    var acc:Int = 0
+    for (i <- 0 to test_preds.length - 1) {
+      if (y(i + 1600)==scala.math.round(test_preds(i))){
+        acc=acc+1
+      }
+      print(s"$acc of $i ")
+      println(y(i + 1600), scala.math.round(test_preds(i)), test_preds(i))
+    }
+    */
     // test with generate data
     val true_weight = DenseVector[Double](1.0, -2.0, -3.0, 4.0, 5.0)
     val (x, y) = generate_lineardata(true_weight)
@@ -84,13 +99,12 @@ object mainspace {
     }
     println(s"\nMSE: $mse")
 
-    println("\n\nPredictions:")
+    println("\n\n")
     for (i <- 0 to y_preds.length - 1){
       println(y(i), y_preds(i))
-
-     */
     }
   }
+
 
   def generate_lineardata(weight: DenseVector[Double], size: Int = 100): (DenseMatrix[Double], DenseVector[Double]) = {
     val X_max = 100
